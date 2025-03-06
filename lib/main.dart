@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:math_expressions/math_expressions.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(const CalculatorApp());
@@ -47,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Kalkulator'),
-        backgroundColor: Colors.teal,
+        backgroundColor: Colors.blue,
       ),
       body: IndexedStack(
         index: _selectedIndex,
@@ -58,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
             });
           }),
           CalculationHistory(calculationHistory: _calculationHistory),
-          const UserProfileDisplay(),
+          const ProfileScreen(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -68,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.orange,
+        selectedItemColor: Colors.blue,
         onTap: _onItemTapped,
       ),
     );
@@ -86,6 +87,27 @@ class Calculator extends StatefulWidget {
 class _CalculatorState extends State<Calculator> {
   String _display = '0';
   String _history = '';
+
+  // Fungsi menangani input keyboard
+  void _handleKeyboardInput(RawKeyEvent event) {
+    if (event is RawKeyDownEvent) {
+      String key = event.logicalKey.keyLabel;
+
+      if (RegExp(r'^[0-9]$').hasMatch(key)) {
+        _handleInput(key);
+      } else if (key == 'Backspace') {
+        _handleInput('Del');
+      } else if (key == 'Enter' || key == '=') {
+        _handleInput('=');
+      } else if (key == 'Escape') {
+        _handleInput('C');
+      } else if (key == '+' || key == '-' || key == '*' || key == '/') {
+        _handleInput(key == '*' ? '×' : key == '/' ? '÷' : key);
+      } else if (key == '.') {
+        _handleInput('.');
+      }
+    }
+  }
 
   void _handleInput(String value) {
     setState(() {
@@ -114,6 +136,86 @@ class _CalculatorState extends State<Calculator> {
     });
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return RawKeyboardListener(
+      focusNode: FocusNode(),
+      autofocus: true,
+      onKey: _handleKeyboardInput,
+      child: Column(
+        children: [
+          Expanded(
+            flex: 2,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                double maxFontSize = 60;
+                double minFontSize = 20;
+                double currentFontSize = maxFontSize;
+
+                TextPainter textPainter = TextPainter(
+                  text: TextSpan(
+                    text: _display,
+                    style: TextStyle(fontSize: currentFontSize),
+                  ),
+                  maxLines: null,
+                  textDirection: TextDirection.ltr,
+                );
+
+                do {
+                  textPainter.text = TextSpan(
+                    text: _display,
+                    style: TextStyle(fontSize: currentFontSize),
+                  );
+                  textPainter.layout(maxWidth: constraints.maxWidth);
+
+                  if (textPainter.height > constraints.maxHeight) {
+                    currentFontSize -= 2;
+                  } else {
+                    break;
+                  }
+                } while (currentFontSize > minFontSize);
+
+                return Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.all(16),
+                  constraints: BoxConstraints(
+                    maxWidth: constraints.maxWidth,
+                    maxHeight: constraints.maxHeight,
+                  ),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    reverse: true,
+                    child: Wrap(
+                      alignment: WrapAlignment.end,
+                      children: [
+                        Text(
+                          _display,
+                          style: TextStyle(fontSize: currentFontSize, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          Expanded(
+            flex: 5,
+            child: Column(
+              children: [
+                Row(children: ['7', '8', '9', '÷'].map((e) => _buildButton(e, color: const Color.fromARGB(255, 100, 100, 100))).toList()),
+                Row(children: ['4', '5', '6', '×'].map((e) => _buildButton(e, color: const Color.fromARGB(255, 100, 100, 100))).toList()),
+                Row(children: ['1', '2', '3', '-'].map((e) => _buildButton(e, color: const Color.fromARGB(255, 100, 100, 100))).toList()),
+                Row(children: ['C', '0', 'Del', '+'].map((e) => _buildButton(e, color: const Color.fromARGB(255, 100, 100, 100))).toList()),
+                Row(children: [_buildButton('=')]),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildButton(String text, {Color color = Colors.grey}) {
     return Expanded(
       child: Padding(
@@ -128,43 +230,6 @@ class _CalculatorState extends State<Calculator> {
           onPressed: () => _handleInput(text),
           child: Text(text, style: const TextStyle(fontSize: 42)),
         ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Column(
-        children: [
-  Expanded(
-    flex: 2,
-    child: Container(
-      alignment: Alignment.centerRight,
-      padding: const EdgeInsets.all(24),
-      child: FittedBox(
-        fit: BoxFit.scaleDown, // Mengecilkan teks secara otomatis jika penuh
-        child: Text(
-          _display,
-          style: const TextStyle(fontSize: 60, fontWeight: FontWeight.w100),
-        ),
-      ),
-    ),
-  ),
-
-          Expanded(
-            flex: 5,
-            child: Column(
-              children: [
-                Row(children: ['7', '8', '9', '÷'].map((e) => _buildButton(e, color: Colors.orange)).toList()),
-                Row(children: ['4', '5', '6', '×'].map((e) => _buildButton(e, color: Colors.orange)).toList()),
-                Row(children: ['1', '2', '3', '-'].map((e) => _buildButton(e, color: Colors.orange)).toList()),
-                Row(children: ['C', '0', 'Del', '+'].map((e) => _buildButton(e, color: Colors.orange)).toList()),
-                Row(children: [_buildButton('=')]),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -187,53 +252,44 @@ class CalculationHistory extends StatelessWidget {
   }
 }
 
-class UserProfileDisplay extends StatelessWidget {
-  const UserProfileDisplay({super.key});
+class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
+    return Center(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Foto Profil
-          const CircleAvatar(
-            radius: 50, // Ukuran foto profil
-            backgroundImage: AssetImage('asset/p.jpg'), // Ganti dengan foto pengguna
-            backgroundColor: Colors.grey, // Jika tidak ada gambar, gunakan warna abu-abu
+          ClipOval(
+            child: Image.asset(
+              'p.jpg',
+              width: 120,
+              height: 120,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(
+                  Icons.person,
+                  size: 120,
+                  color: Colors.grey,
+                );
+              },
+            ),
           ),
-          const SizedBox(height: 16), // Jarak antara foto profil dan teks
-
+          const SizedBox(height: 20),
           // Informasi Profil
           const Text(
-            'Profil Pengguna',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.teal),
+            'Nama: ZF',
+            style: TextStyle(fontSize: 24, color: Color.fromARGB(255, 0, 0, 0)),
           ),
-          const SizedBox(height: 10),
-
-          // Nama dan Email dalam ListTile
-          const Card(
-            elevation: 2, // Efek bayangan pada kartu
-            child: ListTile(
-              leading: Icon(Icons.person, color: Colors.teal),
-              title: Text('Nama'),
-              subtitle: Text('ZF'),
-            ),
-          ),
-          const SizedBox(height: 5),
-
-          const Card(
-            elevation: 2,
-            child: ListTile(
-              leading: Icon(Icons.email, color: Colors.teal),
-              title: Text('Email'),
-              subtitle: Text('ZF@example.com'),
-            ),
+          const Text(
+            'Email: ZF@gmail.com',
+            style: TextStyle(fontSize: 18, color: Color.fromARGB(255, 0, 0, 0)),
           ),
         ],
-      ),
-    );
-  }
+    ),
+);
+}
 }
 
