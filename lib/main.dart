@@ -88,7 +88,6 @@ class _CalculatorState extends State<Calculator> {
   String _display = '0';
   String _history = '';
 
-  // Fungsi menangani input keyboard
   void _handleKeyboardInput(RawKeyEvent event) {
     if (event is RawKeyDownEvent) {
       String key = event.logicalKey.keyLabel;
@@ -154,7 +153,7 @@ class _CalculatorState extends State<Calculator> {
 
                 TextPainter textPainter = TextPainter(
                   text: TextSpan(
-                    text: _display,
+                    text: _history + _display,
                     style: TextStyle(fontSize: currentFontSize),
                   ),
                   maxLines: null,
@@ -163,7 +162,7 @@ class _CalculatorState extends State<Calculator> {
 
                 do {
                   textPainter.text = TextSpan(
-                    text: _display,
+                    text: _history + _display,
                     style: TextStyle(fontSize: currentFontSize),
                   );
                   textPainter.layout(maxWidth: constraints.maxWidth);
@@ -185,9 +184,13 @@ class _CalculatorState extends State<Calculator> {
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
                     reverse: true,
-                    child: Wrap(
-                      alignment: WrapAlignment.end,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
+                        Text(
+                          _history,
+                          style: TextStyle(fontSize: currentFontSize * 0.6, color: Colors.grey),
+                        ),
                         Text(
                           _display,
                           style: TextStyle(fontSize: currentFontSize, fontWeight: FontWeight.bold),
