@@ -137,84 +137,100 @@ class _CalculatorState extends State<Calculator> {
 
   @override
   Widget build(BuildContext context) {
-    return RawKeyboardListener(
-      focusNode: FocusNode(),
-      autofocus: true,
-      onKey: _handleKeyboardInput,
-      child: Column(
-        children: [
-          Expanded(
-            flex: 2,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                double maxFontSize = 60;
-                double minFontSize = 20;
-                double currentFontSize = maxFontSize;
-
-                TextPainter textPainter = TextPainter(
-                  text: TextSpan(
-                    text: _history + _display,
-                    style: TextStyle(fontSize: currentFontSize),
-                  ),
-                  maxLines: null,
-                  textDirection: TextDirection.ltr,
-                );
-
-                do {
-                  textPainter.text = TextSpan(
-                    text: _history + _display,
-                    style: TextStyle(fontSize: currentFontSize),
-                  );
-                  textPainter.layout(maxWidth: constraints.maxWidth);
-
-                  if (textPainter.height > constraints.maxHeight) {
-                    currentFontSize -= 2;
-                  } else {
-                    break;
-                  }
-                } while (currentFontSize > minFontSize);
-
-                return Container(
-                  alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.all(16),
-                  constraints: BoxConstraints(
-                    maxWidth: constraints.maxWidth,
-                    maxHeight: constraints.maxHeight,
-                  ),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    reverse: true,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          _history,
-                          style: TextStyle(fontSize: currentFontSize * 0.6, color: Colors.grey),
-                        ),
-                        Text(
-                          _display,
-                          style: TextStyle(fontSize: currentFontSize, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+    return Center(
+      child: RawKeyboardListener(
+        focusNode: FocusNode(),
+        autofocus: true,
+        onKey: _handleKeyboardInput,
+        child: Container(
+          width: 500,
+          padding: const EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 209, 209, 209),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black45,
+                blurRadius: 10,
+                spreadRadius: 2,
+              ),
+            ],
           ),
-          Expanded(
-            flex: 5,
-            child: Column(
-              children: [
-                Row(children: ['7', '8', '9', '÷'].map((e) => _buildButton(e, color: const Color.fromARGB(255, 100, 100, 100))).toList()),
-                Row(children: ['4', '5', '6', '×'].map((e) => _buildButton(e, color: const Color.fromARGB(255, 100, 100, 100))).toList()),
-                Row(children: ['1', '2', '3', '-'].map((e) => _buildButton(e, color: const Color.fromARGB(255, 100, 100, 100))).toList()),
-                Row(children: ['C', '0', 'Del', '+'].map((e) => _buildButton(e, color: const Color.fromARGB(255, 100, 100, 100))).toList()),
-                Row(children: [_buildButton('=')]),
-              ],
-            ),
+          child: Column(
+            children: [
+              Expanded(
+                flex: 2,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    double maxFontSize = 60;
+                    double minFontSize = 20;
+                    double currentFontSize = maxFontSize;
+
+                    TextPainter textPainter = TextPainter(
+                      text: TextSpan(
+                        text: _history + _display,
+                        style: TextStyle(fontSize: currentFontSize),
+                      ),
+                      maxLines: null,
+                      textDirection: TextDirection.ltr,
+                    );
+
+                    do {
+                      textPainter.text = TextSpan(
+                        text: _history + _display,
+                        style: TextStyle(fontSize: currentFontSize),
+                      );
+                      textPainter.layout(maxWidth: constraints.maxWidth);
+
+                      if (textPainter.height > constraints.maxHeight) {
+                        currentFontSize -= 2;
+                      } else {
+                        break;
+                      }
+                    } while (currentFontSize > minFontSize);
+
+                    return Container(
+                      alignment: Alignment.centerRight,
+                      constraints: BoxConstraints(
+                        maxWidth: constraints.maxWidth,
+                        maxHeight: constraints.maxHeight,
+                      ),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.vertical,
+                        reverse: true,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              _history,
+                              style: TextStyle(fontSize: currentFontSize * 0.6, color: Colors.grey),
+                            ),
+                            Text(
+                              _display,
+                              style: TextStyle(fontSize: currentFontSize, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              Expanded(
+                flex: 6,
+                child: Column(
+                  children: [
+                    Row(children: ['7', '8', '9', '÷'].map((e) => _buildButton(e, color: const Color.fromARGB(255, 100, 100, 100))).toList()),
+                    Row(children: ['4', '5', '6', '×'].map((e) => _buildButton(e, color: const Color.fromARGB(255, 100, 100, 100))).toList()),
+                    Row(children: ['1', '2', '3', '-'].map((e) => _buildButton(e, color: const Color.fromARGB(255, 100, 100, 100))).toList()),
+                    Row(children: ['C', '0', 'Del', '+'].map((e) => _buildButton(e, color: const Color.fromARGB(255, 100, 100, 100))).toList()),
+                    Row(children: [_buildButton('=')]),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -291,8 +307,7 @@ class ProfileScreen extends StatelessWidget {
             style: TextStyle(fontSize: 18, color: Color.fromARGB(255, 0, 0, 0)),
           ),
         ],
-    ),
-);
+      ),
+    );
+  }
 }
-}
-
